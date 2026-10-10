@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://richtrade.tail03e06c.ts.net wss://api.orangex.com wss://fstream.binance.com; frame-src https://richtradingschool.github.io; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>PIXEL TRADING FLOOR</title>
+  <meta name="description" content="AI 직원들이 일하는 픽셀 트레이딩 오피스 — 모바일 앱">
+  <meta name="theme-color" content="#1a1a24">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">
+  <meta name="apple-mobile-web-app-title" content="픽셀플로어">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="stylesheet" href="app.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header id="topbar">
+    <nav id="modes" aria-label="화면 고르기">
+      <button type="button" class="mode-btn" data-mode="office">사무실</button>
+      <button type="button" class="mode-btn" data-mode="trade">트레이딩</button>
+    </nav>
+    <button type="button" id="settings-btn" aria-label="설정">⚙</button>
+  </header>
+  <div id="strip" hidden role="region" aria-label="상태"></div>
+
+  <main id="main">
+    <section id="panel-office" class="panel" data-panel="office" hidden></section>
+    <section id="panel-trade" class="panel" data-panel="trade" hidden>
+      <div id="auto-alert" hidden role="alert">
+        <span id="auto-alert-text"></span>
+        <button type="button" id="auto-alert-close" aria-label="알림 닫기">✕</button>
+      </div>
+    </section>
+  </main>
+
+  <section id="screen-install" class="screen" data-screen="install" hidden aria-labelledby="install-title">
+    <header class="screen-head">
+      <button type="button" class="back-btn">← 돌아가기</button>
+      <h1 id="install-title">앱 설치 방법</h1>
+    </header>
+    <div class="screen-body" id="install-body"></div>
+  </section>
+
+  <section id="screen-settings" class="screen" data-screen="settings" hidden aria-labelledby="settings-title">
+    <header class="screen-head">
+      <button type="button" class="back-btn">← 돌아가기</button>
+      <h1 id="settings-title">설정</h1>
+    </header>
+    <div class="screen-body" id="settings-body"></div>
+  </section>
+
+  <section id="screen-verify" class="screen" data-screen="verify" hidden aria-labelledby="verify-title">
+    <header class="screen-head">
+      <button type="button" class="back-btn">← 돌아가기</button>
+      <h1 id="verify-title">UID 인증</h1>
+    </header>
+    <div class="screen-body" id="verify-body"></div>
+  </section>
+
+  <section id="screen-keys" class="screen" data-screen="keys" hidden aria-labelledby="keys-title">
+    <header class="screen-head">
+      <button type="button" class="back-btn">← 돌아가기</button>
+      <h1 id="keys-title">오렌지엑스 연결</h1>
+    </header>
+    <div class="screen-body" id="keys-body"></div>
+  </section>
+
+  <section id="screen-follow" class="screen" data-screen="follow" hidden aria-labelledby="follow-title">
+    <header class="screen-head">
+      <button type="button" class="back-btn">← 돌아가기</button>
+      <h1 id="follow-title">따라가기</h1>
+    </header>
+    <div class="screen-body" id="follow-body"></div>
+  </section>
+
+  <div id="follow-band" hidden role="status"></div>
+  <div id="evt-back" hidden></div>
+  <div id="follow-sheet" hidden role="dialog" aria-label="새 신호"></div>
+
+  <div id="install-banner" hidden>
+    <span id="ib-text">홈 화면에 추가하면 앱처럼 쓸 수 있어요</span>
+    <button type="button" id="ib-go">설치 방법</button>
+    <button type="button" id="ib-close" aria-label="닫기">✕</button>
+  </div>
+
+  <div id="toast" class="ui-toast" hidden role="status"></div>
+
+  <div id="update-toast" hidden role="status">
+    <span>새 버전이 있습니다</span>
+    <button type="button" id="update-apply">적용</button>
+  </div>
+</body>
+</html>

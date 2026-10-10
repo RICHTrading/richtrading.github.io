@@ -1,0 +1,44 @@
+{
+  "id": "/s/",
+  "name": "PIXEL TRADING FLOOR",
+  "short_name": "픽셀플로어",
+  "description": "AI 직원들이 일하는 픽셀 트레이딩 오피스 — 모바일 앱",
+  "lang": "ko",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1a1a24",
+  "theme_color": "#1a1a24",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "사무실",
+      "url": "./#office"
+    },
+    {
+      "name": "트레이딩",
+      "url": "./#trade"
+    }
+  ]
+}

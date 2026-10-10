@@ -1,0 +1,607 @@
+/* PIXEL TRADING FLOOR 모바일 앱 껍데기 — 동업자 최신판(20261008a)과 같은 픽셀 톤(p34 설계 §6.9 — 검은 2px 테두리·계단 그림자·모서리 0,
+   초록 주 버튼·주황 강조·창 바탕 #14100a, CRT 줄무늬). 제목·버튼은 Galmuri11, 긴 본문은 Pretendard(열린 질문 12 권고) */
+@font-face { font-family: 'Galmuri11'; src: url('fonts/Galmuri11.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Pretendard Variable'; src: url('fonts/PretendardVariable.woff2') format('woff2'); font-weight: 45 920; font-display: swap; }
+
+:root {
+  --bg: #1a1a24; --panel: #12121c; --panel2: #16162a; --ink: #ffffff; --ink2: #e2e2ee; --dim: #9a9ab4; --dim2: #8a8aa4;
+  --gold: #e8c84a; --gold-ink: #1a1408; --good: #3fb950; --bad: #f85149; --amber: #d29922;
+  --accent: #f5a623; --box-bg: #14100a; --box-line: #3a2a12; --ghost-line: #4a4a62; --ghost-ink: #c9c9dc;
+  --bar-h: 64px; --strip-h: 0px; --band-h: 0px;
+  --safe-t: env(safe-area-inset-top, 0px); --safe-b: env(safe-area-inset-bottom, 0px);
+  --pixel: 'Galmuri11', 'Pretendard Variable', monospace;
+  --sans: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink2); font-family: var(--sans); -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; word-break: keep-all; overflow-wrap: anywhere; }
+body { overflow: hidden; overscroll-behavior: none; }
+[hidden] { display: none !important; }
+/* CRT 줄무늬(동업자 style.css:40-51) — 화면 전체 2px 검정/2px 투명, 아주 옅게. 누름은 통과 */
+html::after {
+  content: ''; position: fixed; inset: 0; z-index: 100; pointer-events: none;
+  background: repeating-linear-gradient(0deg, #000 0, #000 2px, transparent 2px, transparent 4px); opacity: .06;
+}
+
+/* 맨 위 띠 — 큰 버튼 2개(사무실·트레이딩 — 자동매매 탭은 트레이딩으로 합침, 대표 결정 2026-10-10) + 설정 */
+#topbar {
+  position: fixed; inset: 0 0 auto 0; z-index: 20;
+  display: grid; grid-template-columns: 1fr 44px; gap: 6px; align-items: center;
+  height: calc(var(--safe-t) + var(--bar-h));
+  padding: calc(var(--safe-t) + 8px) max(8px, env(safe-area-inset-right)) 8px max(8px, env(safe-area-inset-left));
+  background: #0a0d16; border-bottom: 2px solid #000; box-shadow: 0 2px 0 #1c2030;
+}
+#modes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; min-width: 0; }
+.mode-btn {
+  height: 48px; min-width: 0; padding: 0 4px;
+  font: 400 15px/1 var(--pixel); letter-spacing: .5px; color: #cfcfe0;
+  background: var(--panel2); border: 2px solid #000; box-shadow: 2px 2px 0 #000;
+  cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; touch-action: manipulation;
+}
+.mode-btn.on { color: var(--gold-ink); background: var(--gold); }
+.mode-btn:active, #settings-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+#settings-btn {
+  height: 48px; width: 44px; padding: 0; font-size: 20px; color: #cfcfe0;
+  background: var(--panel2); border: 2px solid #000; box-shadow: 2px 2px 0 #000; cursor: pointer;
+}
+
+/* 상단 띠(#strip, p34 §6.8) — 맨 위 띠 바로 아래 28px 한 줄: 인증 배지·계정 연결/잔고·📄 가이드·(오른쪽) 거래소 이벤트 칩.
+   보일 때만 html.has-strip → --strip-h 28px. 넘치면 JS가 .tight를 붙여 짧은 글자(.short)로 */
+html.has-strip { --strip-h: 28px; }
+#strip {
+  position: fixed; left: 0; right: 0; top: calc(var(--safe-t) + var(--bar-h)); z-index: 20; height: var(--strip-h);
+  display: flex; align-items: center; gap: 6px; padding: 0 max(8px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left));
+  overflow: hidden; white-space: nowrap; font: 400 12px/1 var(--pixel); background: #0a0d16; border-bottom: 2px solid #000;
+}
+#strip .short { display: none; }
+#strip.tight .long { display: none; }
+#strip.tight .short { display: inline; }
+.strip-item { flex: none; display: inline-flex; align-items: center; height: 20px; padding: 0 6px; font: 400 12px/1 var(--pixel); text-decoration: none; border: 1px solid var(--ghost-line); background: transparent; color: var(--ghost-ink); }
+.strip-badge.good { color: var(--good); border-color: #1f4a2c; background: #12301a; }
+.strip-badge.warn { color: var(--amber); border-color: var(--box-line); }
+.strip-badge.dim, .strip-account.dim { color: var(--dim); }
+button.strip-item { cursor: pointer; }
+.strip-account.accent { color: #14100a; background: var(--accent); border-color: #000; }
+.strip-account.good { color: var(--good); border-color: #1f4a2c; }
+.strip-account.warn { color: var(--amber); }
+.strip-space { flex: 1; min-width: 0; }
+.strip-events { flex: none; display: inline-flex; align-items: center; gap: 4px; }
+/* 오른쪽 거래소 이벤트 칩(p34 §5.3 — 데이터 트랙). 칩 글자: 평소 긴 쪽, 370px 이하는 짧은 쪽, 띠가 넘치면(#strip.tight) 짧은 쪽 */
+#strip-events { margin-left: auto; min-width: 0; }
+#evt-chip {
+  max-width: 100%; height: 22px; padding: 0 8px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  font: 400 12px/20px var(--pixel); color: var(--accent, #f5a623); background: transparent;
+  border: 1px solid var(--accent, #f5a623); cursor: pointer; touch-action: manipulation;
+}
+#evt-chip b { font-weight: 400; color: var(--gold); }
+#evt-chip:active { transform: translate(1px, 1px); }
+#evt-chip .short { display: none; }
+@media (max-width: 370px) { #evt-chip .long { display: none; } #evt-chip .short { display: inline; } }
+
+/* 본문 — 띠 아래 남은 화면 전체 */
+#main { position: fixed; left: 0; right: 0; top: calc(var(--safe-t) + var(--bar-h) + var(--strip-h) + var(--band-h)); bottom: 0; }
+.panel { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+#panel-office { overflow: hidden; padding-bottom: var(--safe-b); }
+.office-frame { display: block; width: 100%; height: 100%; border: 0; background: var(--bg); }
+.office-offline, .office-wait { margin: 0; padding: 32px 18px; text-align: center; font-size: 15px; line-height: 1.6; opacity: .85; }
+.office-open { position: absolute; left: 12px; right: 12px; bottom: calc(12px + var(--safe-b)); z-index: 2; margin: 0; padding: 12px 14px; text-align: center; font-size: 14px; background: var(--panel2); border: 2px solid #000; box-shadow: 2px 2px 0 #000; }
+.office-open a { color: var(--ink); }
+
+/* 준비 중 탭 */
+.soon { max-width: 560px; margin: 0 auto; padding: 24px 18px calc(24px + var(--safe-b)); }
+.soon .badge { display: inline-block; margin-bottom: 14px; padding: 4px 8px; font: 400 12px/1 var(--pixel); color: var(--gold-ink); background: var(--gold); border: 2px solid #000; }
+.soon h2 { margin: 0 0 12px; font: 400 20px/1.3 var(--pixel); color: var(--gold); }
+.soon p { margin: 0 0 10px; font-size: 15px; line-height: 1.6; }
+
+/* 덮는 화면(설치 안내·설정) */
+.screen { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column; padding-top: var(--safe-t); background: var(--bg); }
+.screen-head { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #0a0d16; border-bottom: 2px solid #000; }
+.screen-head h1 { margin: 0; font: 400 17px/1.2 var(--pixel); color: var(--gold); }
+.back-btn { padding: 10px; font: 400 13px/1 var(--pixel); color: #cfcfe0; background: var(--panel2); border: 2px solid #000; box-shadow: 2px 2px 0 #000; cursor: pointer; }
+.screen-body { flex: 1; overflow-y: auto; padding: 16px 16px calc(24px + var(--safe-b)); }
+
+/* 설정 */
+.set-list { list-style: none; margin: 0 0 18px; padding: 0; background: var(--panel); border: 2px solid #000; }
+.set-list li { display: flex; justify-content: space-between; gap: 12px; padding: 14px; font-size: 15px; border-bottom: 1px solid #1c2030; }
+.set-list li:last-child { border-bottom: 0; }
+.set-val { color: var(--dim); text-align: right; }
+.set-val.good { color: var(--good); }
+.set-val.bad { color: var(--bad); }
+.set-links a, .set-links button {
+  display: block; width: 100%; margin: 0 0 8px; padding: 14px; text-align: left; text-decoration: none;
+  font: 500 15px/1.3 var(--sans); color: var(--ink); background: var(--panel2);
+  border: 2px solid #000; box-shadow: 2px 2px 0 #000; cursor: pointer;
+}
+
+/* 설치 안내 */
+.install-intro { margin: 0 0 14px; font-size: 15px; line-height: 1.6; }
+.installed-note { margin: 0 0 16px; padding: 14px; color: var(--good); background: #10200f; border: 2px solid #000; line-height: 1.6; }
+.escape-actions { display: grid; gap: 8px; margin: 0 0 16px; }
+.big-btn {
+  display: block; min-height: 44px; padding: 13px 12px; text-align: center; text-decoration: none;
+  font: 700 15px/1.3 var(--pixel); color: #08160b; background: var(--good);
+  border: 2px solid #000; border-radius: 0; box-shadow: 3px 3px 0 #000; cursor: pointer;
+}
+.big-btn:active { transform: translate(3px, 3px); box-shadow: none; }
+.big-btn.alt { background: transparent; border-color: var(--ghost-line); color: var(--ghost-ink); font-weight: 400; }
+.big-btn.danger { background: var(--bad); color: #fff; }
+.big-btn.accent { background: var(--accent); color: #14100a; }
+
+/* 공용 부품(동업자 style.css 값) — 칩·사각 스위치·창(모달)·토스트·번호표 */
+.ui-chip { display: inline-block; padding: 6px 9px; font: 400 12px/1 var(--pixel); color: var(--ghost-ink); background: transparent; border: 2px solid var(--ghost-line); border-radius: 0; cursor: pointer; }
+.ui-chip.on { color: #14100a; background: var(--accent); border-color: #000; font-weight: 700; }
+.ui-switch { position: relative; display: inline-block; flex: none; width: 34px; height: 16px; background: var(--panel); border: 2px solid var(--ghost-line); }
+.ui-switch::after { content: ''; position: absolute; top: 1px; left: 1px; width: 10px; height: 10px; background: var(--ghost-line); }
+.ui-switch.on { background: #12301a; border-color: #1f4a2c; }
+.ui-switch.on::after { left: auto; right: 1px; background: #3fb950; }
+.ui-modal { position: fixed; inset: 0; z-index: 48; display: flex; align-items: center; justify-content: center; padding: calc(16px + var(--safe-t)) 16px calc(16px + var(--safe-b)); background: rgba(0, 0, 0, .62); }
+.ui-modal-box { width: 100%; max-width: 420px; max-height: 100%; overflow-y: auto; padding: 16px; color: var(--ink2); background: var(--box-bg); border: 2px solid var(--accent); box-shadow: 6px 6px 0 #000; }
+.ui-modal-kicker { margin: 0 0 4px; font: 400 11px/1.3 var(--pixel); color: var(--accent); }
+.ui-modal-title { margin: 0 0 12px; font: 400 17px/1.3 var(--pixel); font-size: 17px; color: var(--ink); }
+.ui-modal-box p { margin: 0 0 10px; font-size: 14px; line-height: 1.6; }
+.ui-modal-box .ui-note { font-size: 12px; color: var(--dim2); }
+.ui-toast { position: fixed; left: 50%; top: 50%; z-index: 60; transform: translate(-50%, -50%); max-width: calc(100% - 32px); padding: 12px 16px; text-align: center; font: 400 15px/1.4 var(--pixel); font-size: 15px; color: var(--ink); background: var(--box-bg); border: 3px solid var(--good); box-shadow: 3px 3px 0 #000; pointer-events: none; }
+.ui-toast.bad { border-color: var(--bad); }
+.ui-num { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 18px; height: 18px; font: 700 11px/1 var(--pixel); color: #14100a; background: var(--accent); }
+.guide-sec { margin: 0 0 18px; padding: 14px; background: var(--panel); border: 2px solid #000; }
+.guide-sec h2 { margin: 0 0 6px; font: 400 16px/1.3 var(--pixel); color: var(--gold); }
+.guide-sec .lead { margin: 0 0 10px; font-size: 14px; line-height: 1.5; color: var(--dim); }
+.guide-sec ol { margin: 0; padding-left: 22px; }
+.guide-sec li { margin: 0 0 8px; font-size: 15px; line-height: 1.55; }
+.guide-sec .note { margin: 10px 0 0; font-size: 13px; line-height: 1.5; color: var(--dim); }
+.chips { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 4px; }
+.chip { padding: 5px 7px; font: 400 12px/1 var(--pixel); color: var(--gold-ink); background: var(--gold); border: 2px solid #000; }
+.chip-arrow { font-size: 12px; color: var(--dim); }
+
+/* 맨 아래 설치 배너 · 맨 위 새 버전 알림 */
+#install-banner {
+  position: fixed; left: 8px; right: 8px; bottom: calc(8px + var(--safe-b)); z-index: 30;
+  display: flex; align-items: center; gap: 8px; padding: 10px 10px 10px 14px; font-size: 14px;
+  background: #121a2e; border: 2px solid #000; box-shadow: 3px 3px 0 #000;
+}
+/* 트레이딩 탭 시트(.tv-sheet — #main 안, 쌓임 맥락이 #main이라 z 50이어도 이 배너 아래)가 열린 동안은 배너를 숨긴다 — 동의·끄기 버튼이 배너에 가려지지 않게(p40 검토 7, screens/trade-sheet.js) */
+html.tv-sheet-open #install-banner { display: none; }
+#ib-text { flex: 1; min-width: 0; }
+#ib-go { padding: 10px; white-space: nowrap; font: 400 13px/1 var(--pixel); color: var(--gold-ink); background: var(--gold); border: 2px solid #000; cursor: pointer; }
+#ib-close { padding: 6px; font-size: 18px; color: var(--dim); background: none; border: 0; cursor: pointer; }
+#update-toast {
+  position: fixed; left: 50%; top: calc(var(--safe-t) + var(--bar-h) + var(--strip-h) + var(--band-h) + 8px); z-index: 35; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px; font-size: 14px; white-space: nowrap;
+  background: #10200f; border: 2px solid #000; box-shadow: 3px 3px 0 #000;
+}
+#update-apply { padding: 8px 10px; font: 400 13px/1 var(--pixel); color: var(--gold-ink); background: var(--gold); border: 2px solid #000; cursor: pointer; }
+
+@media (max-width: 370px) { .mode-btn { font-size: 14px; letter-spacing: 0; } }
+/* 가로로 눕힌 휴대폰 — 띠를 낮춘다 */
+@media (orientation: landscape) and (max-height: 500px) {
+  :root { --bar-h: 52px; }
+  .mode-btn, #settings-btn { height: 38px; }
+}
+
+/* 운영 측 자동매매 송출(modes/auto.js) — 대표 결정 2026-10-10: 자동매매 탭을 트레이딩 탭으로 합침.
+   ⚡ 오토 모드 카드(.trade-auto — 탭 맨 위·차트 위: 켜기·끄기 줄·상태 줄·오토 종목·인증 입구)와 열린 포지션 목록(.trade-autolist — 주문 칸 아래:
+   열린 포지션·가격 안내·최근 매매 흐름·성적·새 매매 알림 스위치·내 따라가기 설정). 360px에서 가로 넘침 없음(긴 글은 줄바꿈) */
+.trade .trade-auto { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 8px 10px; background: var(--t-bg); border: 2px solid var(--t-line); box-shadow: 3px 3px 0 #000; }
+.trade .ta-title { order: -1; margin: 0; font: 400 14px/1.4 var(--pixel); color: var(--t-amber); overflow-wrap: anywhere; }
+/* 따라갈 수 있는 기기는 켜기·끄기 줄(.trade-follow)이 같은 제목(FTEXT.quickTitle)과 켜짐·꺼짐 상태를 한 줄에 — 카드 제목은 숨김(같은 글 두 번 없게) */
+.trade .trade-auto .trade-follow:not(:empty) ~ .ta-title { display: none; }
+.trade .ta-feed { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.trade .ta-feed:empty { display: none; }
+/* 이름표 '운영 측 실계좌'(검토 2026-10-10) — 바로 아래 상태 줄이 운영 측 것(위 ⚡ 켜기·끄기 줄은 회원 자기 것). 한 줄, 작게 */
+.auto-owner { margin: 0 0 -2px; font-size: 12px; line-height: 1.4; color: var(--t-amber); overflow-wrap: anywhere; }
+.auto-status { margin: 0; padding: 8px 10px; font: 400 13px/1.4 var(--pixel); background: var(--panel); border: 2px solid #000; overflow-wrap: anywhere; }
+.auto-status.good { color: var(--good); }
+.auto-status.bad { color: var(--bad); }
+.auto-status.warn { color: var(--gold); }
+.auto-status.dim { color: var(--dim); }
+.auto-symbols { margin: 0; font-size: 12px; line-height: 1.5; color: var(--dim); overflow-wrap: anywhere; }
+/* 인증 입구(미인증 s·j: 'UID 인증하기'·'오렌지엑스 가입하기')·정리 길('따라가기' — 인증이 풀린 기기) — 좁으면 한 줄에 하나 */
+.auto-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; min-width: 0; }
+.auto-links .big-btn { margin: 0; min-height: 40px; padding: 9px 8px; font-size: 13px; overflow-wrap: anywhere; }
+.auto-member-note { margin: 0; padding: 10px 12px; font-size: 13px; line-height: 1.55; color: var(--gold); background: #121a2e; border: 2px solid #000; overflow-wrap: anywhere; }
+/* 열린 포지션 목록 — 판정 상자·주문 칸 아래(아래로 내리면 포지션 — 대표 2026-10-10) */
+.trade .trade-autolist { display: flex; flex-direction: column; gap: 12px; min-width: 0; margin-top: 6px; }
+.trade .trade-autolist:empty { display: none; }
+.auto-open, .auto-flow { margin: 0; min-width: 0; }
+.trade-autolist h3 { margin: 0 0 8px; font: 400 15px/1.3 var(--pixel); color: var(--gold); }
+.auto-card { margin: 0 0 8px; padding: 12px 14px; background: var(--panel2); border: 2px solid #000; box-shadow: 2px 2px 0 #000; min-width: 0; }
+.auto-card p { margin: 0 0 4px; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.auto-card .card-title { font: 400 16px/1.3 var(--pixel); color: var(--ink); }
+.auto-card .card-lev { color: var(--ink); }
+.auto-card .card-time { color: var(--dim); }
+.auto-card .card-price { font-variant-numeric: tabular-nums; }
+.auto-card .card-fill { font-size: 13px; color: var(--dim); font-variant-numeric: tabular-nums; }
+.auto-card .card-frozen { color: var(--gold); }
+.auto-card .card-mine { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--dim); color: var(--good); } /* p34 이 기기 내 따라가기 */
+.auto-price-note, .auto-flow-note, .auto-flow-empty { margin: 6px 0 10px; font-size: 13px; line-height: 1.5; color: var(--dim); }
+.trade-auto .auto-price-note { margin: 0; } /* 미인증 s·j의 A-03 — 카드 안 버튼 줄 바로 위(카드 gap이 간격) */
+.auto-mine-total { margin: 0 0 12px; font: 400 14px/1.4 var(--pixel); color: var(--good); }
+.trade-autolist .big-btn { margin: 0 0 10px; }
+.auto-cta { margin: 0 0 10px; padding: 12px; background: #121a2e; border: 2px solid #000; }
+.cta-msg { margin: 0 0 10px; font-size: 14px; line-height: 1.55; }
+.auto-flow-list { list-style: none; margin: 0; padding: 0; background: var(--panel); border: 2px solid #000; }
+.flow-item { display: flex; gap: 10px; padding: 10px 12px; font-size: 14px; line-height: 1.45; border-bottom: 1px solid #1c2030; }
+.flow-item:last-child { border-bottom: 0; }
+.flow-time { flex: none; color: var(--dim); font-variant-numeric: tabular-nums; }
+.flow-text { min-width: 0; overflow-wrap: anywhere; }
+.flow-item.good .flow-text { color: var(--good); }
+.flow-item.bad .flow-text { color: var(--bad); }
+.flow-item.warn .flow-text { color: var(--gold); }
+.auto-stats { margin: 0; font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; }
+/* 내 따라가기 설정(2026-10-10 — 옛 고지 박스 자리, 따라갈 수 있는 기기만): 한 줄씩 이름(왼쪽)·값(오른쪽), 좁으면 값이 다음 줄로 */
+.auto-my { margin: 0; padding: 12px 14px; background: var(--panel); border: 2px solid #000; }
+.auto-my-list { margin: 0 0 12px; }
+.auto-my-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; padding: 7px 0; font-size: 14px; line-height: 1.5; border-bottom: 1px solid #1c2030; }
+.auto-my-row:last-child { border-bottom: 0; }
+.auto-my-row dt { min-width: 0; color: var(--dim); overflow-wrap: anywhere; }
+.auto-my-row dd { min-width: 0; margin: 0 0 0 auto; text-align: right; color: var(--ink); overflow-wrap: anywhere; }
+.auto-my-row .auto-my-note { flex: 1 0 100%; margin: 0; text-align: left; font-size: 12px; color: var(--dim); }
+.auto-my-row .auto-my-note.warn { color: var(--gold); }
+.auto-my-row .auto-my-note.bad { color: var(--bad); }
+.trade-autolist .auto-my-edit { width: 100%; margin: 0; }
+.auto-switch { display: flex; align-items: center; gap: 10px; padding: 12px 14px; font-size: 14px; background: var(--panel2); border: 2px solid #000; cursor: pointer; }
+.auto-switch input { flex: none; width: 22px; height: 22px; margin: 0; accent-color: var(--gold); }
+.set-note { margin: 0 0 8px; font-size: 14px; line-height: 1.55; }
+
+/* 새 매매 알림 — 트레이딩 패널 맨 앞(흐름 안): 내용을 밀어 내고, 스크롤해도 패널 위쪽에 붙어 있다.
+   다른 탭·사무실·덮는 화면(#keys·#follow·#verify·설정 — z 40)의 위를 가리지 않는다(통합 보고 7) — 그동안은 트레이딩 버튼에 점 */
+#auto-alert {
+  position: sticky; top: 8px; z-index: 5; max-width: 560px; margin: 8px auto 0; width: calc(100% - 16px);
+  display: flex; align-items: center; gap: 10px; padding: 12px 12px 12px 14px;
+  font: 400 15px/1.35 var(--pixel); color: var(--gold-ink); background: var(--gold);
+  border: 2px solid #000; box-shadow: 3px 3px 0 #000;
+}
+/* 새 버전 알림(#update-toast, 띠 아래 고정·높이 약 57px)이 떠 있으면 그 아래로 */
+body:has(#update-toast:not([hidden])) #auto-alert { margin-top: 72px; top: 72px; }
+.mode-btn.has-alert { position: relative; }
+.mode-btn.has-alert::after { content: ''; position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; background: var(--gold); border: 2px solid #000; }
+.mode-btn.on.has-alert::after { background: var(--gold-ink); }
+#auto-alert-text { flex: 1; min-width: 0; }
+#auto-alert-close { padding: 6px; font-size: 18px; color: var(--gold-ink); background: none; border: 0; cursor: pointer; }
+
+/* UID 인증 화면(s·j판) — 입력칸 글자 18px(아이폰 확대 방지) */
+.verify { max-width: 560px; margin: 0 auto; }
+.verify p { margin: 0 0 12px; font-size: 15px; line-height: 1.6; }
+.verify .verify-note { font-size: 13px; color: var(--dim); }
+.verify .verify-current { font: 400 14px/1.4 var(--pixel); color: var(--good); }
+.verify .verify-hint { padding: 12px; background: var(--panel); border: 2px solid #000; }
+/* 인증된 기기에서 숨기는 라벨·입력칸·버튼 — app.css 앞쪽의 [hidden] { display: none !important }가 아래 display 규칙보다 이긴다 */
+.verify label { display: block; margin: 0 0 6px; font: 400 14px/1.3 var(--pixel); color: var(--gold); }
+#verify-uid { display: block; width: 100%; margin: 0 0 12px; padding: 14px; font: 500 18px/1.2 var(--sans); letter-spacing: 1px; color: var(--ink); background: var(--panel); border: 2px solid #000; border-radius: 0; }
+#verify-submit { width: 100%; margin: 0 0 12px; }
+#verify-submit:disabled { opacity: .6; cursor: default; }
+.verify-msg { padding: 12px; background: var(--panel); border: 2px solid #000; }
+.verify-msg.good { color: var(--good); }
+.verify-msg.bad { color: var(--bad); }
+.verify-msg.warn { color: var(--gold); }
+.verify .big-btn.alt { margin: 0 0 12px; }
+/* p34 §6.5 — 동업자 UID 활성화 창 단계(제목·자동 확인·이용료 없음 → 입력 → 가입 줄 → 또는 → 체험 모드로 시작 → UID 위치) */
+.verify .verify-gate-title { margin: 0 0 8px; text-align: center; font: 400 16px/1.3 var(--pixel); color: var(--accent); }
+.verify .verify-desc { margin: 0 0 8px; text-align: center; font-weight: 600; color: var(--ink); }
+.verify .verify-why { padding: 10px 12px; font-size: 13px; color: var(--dim); background: var(--box-bg); border: 1px solid var(--box-line); }
+.verify .verify-intro { font-size: 14px; }
+#verify-uid::placeholder { color: var(--dim2); }
+.verify-links { margin: 0 0 12px; }
+.verify-link { display: block; margin: 0 0 8px; padding: 6px 0; font: 400 14px/1.4 var(--pixel); color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+/* 앱 받기 줄(대표 결정 2026-10-09) — 버튼이지만 위 가입 줄(링크)과 같은 모양: 단추 기본 배경·테두리를 지우고 왼쪽 정렬·전체 폭 */
+.verify-app { width: 100%; text-align: left; background: none; border: 0; border-radius: 0; cursor: pointer; }
+.verify .verify-or { margin: 4px 0 8px; text-align: center; font: 400 12px/1 var(--pixel); color: var(--dim2); }
+#verify-guest { width: 100%; }
+.verify .verify-foot { text-align: center; font-size: 13px; color: var(--dim2); }
+/* 설정의 UID 인증 줄 — 미인증이면 인증 화면으로 가는 링크 */
+.set-row-link { display: flex; flex: 1; justify-content: space-between; gap: 12px; color: inherit; text-decoration: none; }
+
+/* 거래소 연결 화면(#keys, s·j판) — 입력칸 글자 16px 이상(아이폰 확대 방지), 비밀 키 칸은 textarea를 글자 가림으로(password 칸 안 씀) */
+.keys { max-width: 560px; margin: 0 auto; }
+.keys p { margin: 0 0 12px; font-size: 15px; line-height: 1.6; }
+.keys-guide { margin: 0 0 12px; padding: 12px 12px 12px 30px; font-size: 14px; line-height: 1.6; background: var(--panel); border: 2px solid #000; }
+.keys .keys-privacy, .keys .keys-clip, .keys .keys-scope, .keys .keys-diag { font-size: 13px; color: var(--dim); }
+/* 동업자 API 연결 가이드(p34 §6.6) — 맨 위 링크 + 계정 권한 '읽기' 줄(K-03c) + 2쪽 차이 줄 */
+.keys-guide-link { display: inline-block; margin: 0 0 8px; padding: 8px 10px; font: 400 14px/1.3 var(--pixel); color: var(--accent); text-decoration: none; border: 2px solid var(--accent); }
+.keys .keys-guide-read { padding: 10px 12px; font-size: 14px; color: var(--amber); background: var(--box-bg); border: 1px solid var(--box-line); }
+.keys .keys-guide-page2 { font-size: 13px; color: var(--dim); }
+.keys .keys-label { display: block; margin: 0 0 6px; font: 400 14px/1.3 var(--pixel); color: var(--gold); }
+#keys-api, #keys-secret { display: block; width: 100%; margin: 0 0 12px; padding: 14px; font: 500 16px/1.3 var(--sans); color: var(--ink); background: var(--panel); border: 2px solid #000; border-radius: 0; }
+#keys-secret { resize: none; }
+.secret { -webkit-text-security: disc; }
+.keys .keys-check { display: flex; gap: 8px; align-items: center; margin: 0 0 12px; font: 400 15px/1.4 var(--sans); color: var(--ink); }
+#keys-submit, #keys-disconnect { width: 100%; margin: 0 0 12px; }
+#keys-submit:disabled { opacity: .6; cursor: default; }
+.keys-msg { padding: 12px; background: var(--panel); border: 2px solid #000; }
+.keys-msg.good { color: var(--good); }
+.keys-msg.bad { color: var(--bad); }
+.keys-msg.warn { color: var(--gold); }
+.keys .keys-ok { font: 400 14px/1.4 var(--pixel); color: var(--good); }
+.keys-legal { margin: 18px 0 0; }
+.keys-legal p { margin: 0 0 6px; font-size: 12px; line-height: 1.5; color: var(--dim); }
+/* 설정 '거래소 연결' 줄이 끊김(주문 안 함)일 때 — keysRow tone 'warn' */
+.set-val.warn { color: var(--gold); }
+
+/* 따라가기 화면(#follow, s·j판) — 입력칸 글자 16px 이상(아이폰 확대 방지), 맨 위 기능 한계(F-03)는 늘 보이게 */
+.follow { max-width: 560px; margin: 0 auto; }
+.follow p { margin: 0 0 12px; font-size: 15px; line-height: 1.6; }
+.follow-title { margin: 0 0 10px; font: 400 18px/1.3 var(--pixel); color: var(--gold); }
+.follow .follow-limits { padding: 12px; font-size: 14px; color: var(--ink); background: #121a2e; border: 2px solid #000; }
+.follow .follow-status { padding: 12px 14px; font: 400 15px/1.3 var(--pixel); background: var(--panel); border: 2px solid #000; }
+.follow-status.good { color: var(--good); }
+.follow-status.bad { color: var(--bad); }
+.follow-status.warn { color: var(--gold); }
+.follow-status.dim { color: var(--dim); }
+.follow .follow-note { padding: 12px; color: var(--gold); background: var(--panel); border: 2px solid #000; }
+/* 잔고 한 줄(대표 결정 2026-10-10 — 이 화면은 상단 띠를 가림): 띠와 같은 값·같은 낱말(🔗 없이), 상태 줄 바로 아래 */
+.follow .follow-balance { margin: -4px 0 12px; font: 400 14px/1.4 var(--pixel); color: var(--good); overflow-wrap: anywhere; }
+.follow .big-btn { width: 100%; margin: 0 0 12px; }
+.follow .big-btn:disabled { opacity: .6; cursor: default; }
+.follow-mode { margin: 0 0 12px; padding: 12px; background: var(--panel); border: 2px solid #000; }
+.follow-mode legend { padding: 0 4px; font: 400 14px/1.3 var(--pixel); color: var(--gold); }
+.follow-radio, .follow-check { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 10px; font-size: 15px; line-height: 1.5; cursor: pointer; }
+.follow-radio input, .follow-check input { flex: none; width: 22px; height: 22px; margin: 0; accent-color: var(--gold); }
+.follow-field { display: block; margin: 0 0 12px; font: 400 14px/1.3 var(--pixel); color: var(--gold); }
+.follow-field input { display: block; width: 100%; margin-top: 6px; padding: 12px; font: 500 16px/1.2 var(--sans); color: var(--ink); background: var(--panel); border: 2px solid #000; border-radius: 0; }
+.follow-help, .follow-legal { margin: 0 0 12px; padding-left: 20px; font-size: 13px; line-height: 1.55; color: var(--dim); }
+.follow .follow-how, .follow .follow-symbols, .follow .follow-notice, .follow .follow-summary { font-size: 14px; }
+.follow-consent { margin: 0 0 12px; padding: 12px; background: var(--panel); border: 2px solid #000; }
+.follow .follow-errors { color: var(--bad); }
+.follow .follow-why { color: var(--bad); font-size: 14px; }
+.follow .follow-check-all { font-weight: 700; padding: 0 0 10px; margin: 0 0 12px; border-bottom: 1px solid currentColor; }
+/* p34 회원 본인 손익(상태 줄 아래)·자동 손절 스위치(켜짐 초록 테두리 — 동업자판 카드 버튼 꼴)·상태 낱말(가격 없음) */
+.follow-pnl, .follow-autosl { margin: 0 0 12px; padding: 12px; background: var(--panel); border: 2px solid #000; }
+.follow-pnl h3, .follow-autosl h3 { margin: 0 0 8px; font: 400 15px/1.3 var(--pixel); color: var(--gold); }
+.follow .follow-pnl-line { margin: 0 0 4px; font-size: 14px; }
+.follow .follow-autosl-on { border-color: var(--good); color: var(--good); }
+.follow .follow-autosl-offbtn { color: var(--dim); }
+.follow .follow-autosl-desc { font-size: 14px; color: var(--ink); }
+.follow .follow-autosl-help, .follow .follow-autosl-retryhelp, .follow .follow-autosl-clearhelp, .follow .follow-autosl-diag { font-size: 13px; color: var(--dim); }
+.follow .follow-autosl-toast, .follow .follow-autosl-off, .follow .follow-autosl-followoff, .follow .follow-autosl-locked { font-size: 14px; color: var(--gold); }
+.follow .follow-autosl-failed, .follow .follow-autosl-check { font-size: 14px; color: var(--bad); }
+.follow-autosl-confirm { margin: 0 0 12px; padding: 12px; background: #121a2e; border: 2px solid var(--gold); }
+.follow-autosl-words { margin: 0 0 12px; padding-left: 20px; font-size: 13px; line-height: 1.55; }
+.follow-records, .follow-shadow { margin: 18px 0 0; }
+.follow-records h3, .follow-shadow h3 { margin: 0 0 8px; font: 400 15px/1.3 var(--pixel); color: var(--gold); }
+.follow-record-list, .follow-consent-records, .follow-shadow-list { margin: 0 0 12px; padding-left: 20px; font-size: 13px; line-height: 1.55; }
+
+/* ② 켜짐 띠(F-14) — 맨 위 띠·상단 띠(#strip) 바로 아래(p34 검토 5 — 한 칸 내려 쌓음). 보이는 동안 html.has-band가 --band-h(31px)를 정해
+   본문(#main)·새 버전 알림을 그만큼 내린다(탭 첫 줄을 가리지 않게 — p34 종단 확인). 덮는 화면(z 40) 아래(z 39) — 따라가기 화면은 자기 상태 줄이 있다.
+   ③ 시트(F-10) — 어느 탭·화면 위에서든(z 46) */
+html.has-band { --band-h: 31px; }
+#follow-band {
+  position: fixed; left: 0; right: 0; top: calc(var(--safe-t) + var(--bar-h) + var(--strip-h)); z-index: 39; height: var(--band-h);
+  margin: 0; padding: 6px 12px; text-align: center; font: 400 13px/1.3 var(--pixel); color: var(--gold-ink); background: var(--good); border-bottom: 2px solid #000;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+@media (max-width: 380px) { #follow-band { padding: 6px 8px; font-size: 12px; } }
+#follow-sheet {
+  position: fixed; left: 8px; right: 8px; bottom: calc(8px + var(--safe-b)); z-index: 46; max-height: 80vh; overflow-y: auto;
+  padding: 14px; background: #121a2e; border: 2px solid #000; box-shadow: 3px 3px 0 #000;
+}
+#follow-sheet p { margin: 0 0 8px; font-size: 15px; line-height: 1.5; }
+#follow-sheet .sheet-title { font: 400 16px/1.3 var(--pixel); color: var(--gold); }
+#follow-sheet .sheet-expired, #follow-sheet .sheet-reason { color: var(--gold); }
+#follow-sheet .sheet-who, #follow-sheet .sheet-notice { font-size: 12px; color: var(--dim); }
+#follow-sheet .sheet-legal { margin: 0 0 6px; padding-left: 18px; font-size: 12px; line-height: 1.5; color: var(--dim); }
+#follow-sheet .big-btn { width: 100%; margin: 0 0 8px; }
+#follow-sheet .big-btn:disabled { opacity: .6; cursor: default; }
+
+/* 거래소 이벤트 창(p34 §5.4 · p35 D-4 — 동업자 20261008a public/style.css #evt 값: 막 rgba(0,0,0,.62)·상자 #11111a·검정 3px·그림자 #0a0a12,
+   절 카드 #171720·검정 2px, ✕ #f85149, 아래 칸 #0e0e16). 휴대폰 터치 크기(✕ 36px·버튼 12px 안쪽)는 그대로. 덮는 화면(z 40)·따라가기 켜짐 띠(39) 위,
+   '한 번 눌러 주문' 시트(46) 아래 — 초 단위로 끝나는 시트를 가리지 않는다 */
+#evt-back {
+  position: fixed; inset: 0; z-index: 45; display: flex; align-items: center; justify-content: center;
+  padding: calc(12px + var(--safe-t)) 12px calc(12px + var(--safe-b)); background: rgba(0, 0, 0, .62);
+}
+#evt {
+  display: flex; flex-direction: column; width: 100%; max-width: 520px; max-height: 100%;
+  background: #11111a; border: 3px solid #000; box-shadow: 6px 6px 0 #0a0a12; color: #f3efe6;
+}
+#evt .evt-hd { display: flex; align-items: center; gap: 8px; padding: 12px 12px 10px 14px; }
+#evt h2 { flex: 1; margin: 0; font: 400 17px/1.3 var(--pixel); color: var(--accent, #f5a623); }
+#evt .evt-x { width: 36px; height: 36px; padding: 0; font-size: 18px; color: #fff; background: #f85149; border: 2px solid #000; cursor: pointer; }
+#evt .evt-body { flex: 1; min-height: 0; overflow-y: auto; padding: 10px 14px; }
+#evt .evt-sec { margin: 0 0 10px; padding: 10px 12px; background: #171720; border: 2px solid #000; }
+#evt h3 { margin: 0 0 6px; font: 400 14px/1.4 var(--pixel); color: #f3efe6; }
+#evt .evt-table { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.45; }
+#evt .evt-table td { padding: 6px 4px; border-bottom: 1px solid #2b2b38; vertical-align: top; }
+#evt .evt-table tr:last-child td { border-bottom: 0; }
+#evt .evt-table td.k { color: #a6a3ad; white-space: nowrap; }
+#evt .evt-table td.r { text-align: right; font-variant-numeric: tabular-nums; }
+#evt .g { color: #f5a623; }
+#evt .evt-note { margin: 8px 0 0; font-size: 12px; line-height: 1.5; color: #a6a3ad; }
+#evt .evt-ft { padding: 10px 14px 14px; background: #0e0e16; border-top: 2px solid #000; }
+#evt .evt-foot, #evt .evt-own { margin: 0 0 8px; font-size: 12px; line-height: 1.5; color: #8a8794; }
+#evt .evt-bt { display: flex; gap: 8px; }
+#evt .evt-bt a {
+  flex: 1; display: block; padding: 12px 8px; text-align: center; text-decoration: none;
+  font: 400 14px/1.2 var(--pixel); border: 2px solid #000; box-shadow: 3px 3px 0 #000;
+}
+#evt .evt-guide { color: #14100a; background: var(--accent, #f5a623); }
+#evt .evt-get { color: #e9e4d6; background: #1c1c28; }
+#evt .evt-bt a:active, #evt .evt-x:active { transform: translate(3px, 3px); box-shadow: none; }
+/* 첫 실행 안내(p34 §6.2) — 막 #tour z 44(덮는 화면 40·켜짐 띠 41 위, 시트 46 아래), 비추는 곳의 고정 조상은 .tour-lift로 막 위(45),
+   설명 상자 #tour-box도 45(조상보다 뒤에 붙어 위에 그려짐). 자리는 클래스 세 벌(.at-top·.at-bottom·.center) — style 속성 없음 */
+#tour { position: fixed; inset: 0; z-index: 44; background: rgba(0, 0, 0, .62); }
+.tour-lift { z-index: 45 !important; }
+html.touring .tour-lift { pointer-events: none; }
+.tour-target { outline: 3px solid var(--gold); outline-offset: -3px; }
+#tour-box {
+  position: fixed; z-index: 45; left: 12px; right: 12px; max-width: 460px; margin: 0 auto; max-height: 62vh; overflow-y: auto;
+  padding: 14px 14px 12px; color: var(--ink2); background: var(--box-bg); border: 2px solid var(--accent); box-shadow: 6px 6px 0 #000;
+}
+#tour-box.at-bottom { bottom: calc(12px + var(--safe-b)); }
+#tour-box.at-top { top: calc(var(--safe-t) + 12px); }
+#tour-box.center { top: 50%; transform: translateY(-50%); max-height: 84vh; }
+#tour-box.big .tour-title { font-size: 20px; color: var(--gold); }
+.tour-step { min-height: 12px; margin: 0 0 4px; font: 400 11px/1 var(--pixel); color: var(--accent); }
+.tour-title { margin: 0 0 10px; font: 400 17px/1.3 var(--pixel); color: var(--ink); }
+.tour-p { margin: 0 0 8px; font-size: 14px; line-height: 1.6; }
+.tour-small { margin: 6px 0 0; font-size: 12px; line-height: 1.5; color: var(--dim2); }
+.tour-agents { display: grid; gap: 8px; margin: 0 0 6px; }
+.tour-agent { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; background: rgba(255, 255, 255, .03); border: 1px solid var(--box-line); }
+.tour-face { flex: none; width: 40px; height: 40px; image-rendering: pixelated; background: #0a0d16; border: 1px solid #000; }
+.tour-agent-text { min-width: 0; }
+.tour-agent-name { display: block; margin: 0 0 3px; font: 400 13px/1.3 var(--pixel); color: var(--accent); }
+.tour-agent-desc { display: block; font-size: 13px; line-height: 1.5; }
+.tour-cmp { width: 100%; margin: 0 0 10px; border-collapse: collapse; font-size: 12px; line-height: 1.45; }
+.tour-cmp th, .tour-cmp td { padding: 6px; text-align: left; vertical-align: top; border: 1px solid var(--box-line); }
+.tour-cmp th { font: 400 12px/1.3 var(--pixel); color: var(--dim2); }
+.tour-cmp .pro { color: var(--good); }
+.tour-extra { margin: 8px 0 0; }
+.tour-nav { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; }
+.tour-sp { flex: 1; }
+.tour-nav button { min-height: 40px; padding: 0 12px; font: 400 13px/1 var(--pixel); color: var(--ghost-ink); background: transparent; border: 2px solid var(--ghost-line); cursor: pointer; }
+.tour-nav .tour-next { color: #08160b; background: var(--good); border-color: #000; box-shadow: 3px 3px 0 #000; }
+.tour-nav .tour-next:active { transform: translate(3px, 3px); box-shadow: none; }
+.tour-nav .invisible { visibility: hidden; }
+/* 앱 받기 창(§6.3, app/screens/app-guide.js) — .ui-modal z 48: UID 인증 화면(.screen 40)·안내(44·45) 위. 2026-10-09부터 인증 화면에서 열고,
+   그 판 가입 주소가 있으면 맨 위에 ① 가입 단계(.ag-signup) → ② 앱 받기(.ag-step) */
+.tour-appguide .ag-step { margin: 0 0 8px; font: 400 14px/1.3 var(--pixel); color: var(--gold); }
+.tour-appguide .ag-signup { margin: 0 0 14px; padding: 10px; border: 1px solid var(--box-line); }
+.tour-appguide .ag-col { margin: 0 0 12px; padding: 10px; border: 1px solid var(--box-line); }
+.tour-appguide .ag-os { margin: 0 0 6px; font: 400 14px/1.3 var(--pixel); color: var(--accent); }
+.tour-appguide .ag-steps { margin: 0 0 10px; padding-left: 20px; font-size: 13px; line-height: 1.55; }
+.tour-appguide .ui-close { width: 100%; }
+
+/* 토스트(동업자판 — 화면 가운데, 초록/빨강 테두리) */
+#toast { transition: opacity .2s; }
+
+/* ── 트레이딩 탭(p2 spec §2.3 — N 매매 화면 색·부품, N css:2188-2570에서 옮긴 값) ──
+   차트는 캔버스(라이브러리), 그 밖은 클래스로만(style 속성 없음). 칩 줄만 자체 가로 스크롤, 양옆 16px 여백 */
+.trade { --t-bg: #14100a; --t-line: #3a2a12; --t-ink: #e2e2ee; --t-dim: #8a8aa4; --t-amber: #f5a623; --t-good: #3fb950; --t-bad: #f85149; display: flex; flex-direction: column; gap: 8px; padding: 8px 16px calc(24px + var(--safe-b)); }
+.trade .trade-syms, .trade .trade-mine { display: flex; gap: 6px; overflow-x: auto; }
+.trade .chip { flex: none; font-family: 'Galmuri11', monospace; font-size: 11px; line-height: 1.2; color: #c9c9dc; background: transparent; border: 1px solid #4a4a62; padding: 4px 8px; cursor: pointer; }
+.trade .chip.on, .trade .chip[aria-pressed="true"] { background: var(--t-amber); color: var(--t-bg); font-weight: 700; }
+.trade .chip.tab { cursor: default; border-color: var(--t-line); color: var(--t-amber); }
+.trade .chip.tab.on { background: transparent; color: var(--t-amber); }
+.trade .chip.mine { border-color: var(--t-amber); color: var(--t-amber); }
+.trade .trade-head { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.trade .chart-status { font-family: 'Galmuri11', monospace; font-size: 11px; line-height: 1.4; color: var(--t-dim); overflow-wrap: anywhere; }
+.trade .chart-tfs, .trade .chart-inds { display: flex; gap: 3px; overflow-x: auto; padding: 0 2px 2px 0; }
+.trade .chart-tfs button, .trade .chart-inds button { flex: none; font-family: 'Galmuri11', monospace; font-size: 10px; color: #6c6c86; background: #0a0a10; border: 2px solid #000; box-shadow: 2px 2px 0 #000; padding: 2px 6px; white-space: nowrap; cursor: pointer; }
+.trade .chart-tfs button.on, .trade .chart-inds button.on { color: #e8e8f4; border-color: #3a3a52; }
+.trade .chart-inds button.help { color: var(--t-dim); }
+.trade .chart-inds button.on[data-ind="ma20"] { color: #f5a623; } .trade .chart-inds button.on[data-ind="ma50"] { color: #4a9de8; } .trade .chart-inds button.on[data-ind="ma200"] { color: #c678dd; }
+.trade .chart-inds button.on[data-ind="ema20"] { color: #56d4c8; } .trade .chart-inds button.on[data-ind="bb"] { color: #9aa4ff; } .trade .chart-inds button.on[data-ind="vol"] { color: #8a8aa4; }
+.trade .chart-inds button.on[data-ind="rsi"] { color: #ffd166; } .trade .chart-inds button.on[data-ind="macd"] { color: #ff8fab; }
+.trade .chart-inds button.on[data-ind="bigs"] { color: #ffffff; } .trade .chart-inds button.on[data-ind="tpsl"] { color: #089981; } .trade .chart-inds button.on[data-ind="delta"] { color: #12cef8; }
+.trade .chart-inds button.on[data-ind="vp"] { color: #298ada; } .trade .chart-inds button.on[data-ind="follow"] { color: rgb(220, 20, 60); }
+/* T-06 설명줄 — 최대 2줄(15px × 2), 누르면 펼침 */
+.trade .chart-legend { display: flex; flex-wrap: wrap; gap: 0 10px; font-family: 'Galmuri11', monospace; font-size: 10px; line-height: 15px; color: var(--t-dim); max-height: 30px; overflow: hidden; cursor: pointer; }
+.trade .chart-legend:empty { display: none; }
+.trade .chart-legend.open { max-height: none; }
+.trade .lg-ma20 { color: #f5a623; } .trade .lg-ma50 { color: #4a9de8; } .trade .lg-ma200 { color: #c678dd; } .trade .lg-ema20 { color: #56d4c8; } .trade .lg-bb { color: #9aa4ff; }
+.trade .lg-rsi { color: #ffd166; } .trade .lg-macd { color: #ff8fab; } .trade .lg-bigs { color: #ffffff; } .trade .lg-tpsl { color: #089981; } .trade .lg-delta { color: #12cef8; } .trade .lg-vp { color: #298ada; } .trade .lg-follow { color: rgb(220, 20, 60); }
+/* ④ 큰 차트 높이 max(260, 화면 × 0.42)(가로 모드 × 0.6), ⑤ 보조 창 110px(N css:2397) */
+.trade .chart-big { position: relative; height: max(260px, 42vh); background: #06060c; }
+.trade .chart-subs:empty { display: none; }
+.trade .chart-sub { position: relative; height: 110px; border-top: 1px solid #1c1c28; background: #06060c; }
+.trade .chart-sub-label { position: absolute; top: 4px; left: 10px; z-index: 3; font-family: 'Galmuri11', monospace; font-size: 10px; color: #6c6c86; pointer-events: none; }
+@media (orientation: landscape) { .trade .chart-big { height: max(260px, 60vh); } .trade .chart-sub { height: 80px; } }
+/* T-14 백테스트 표 — 큰 차트 왼쪽 위, 차트 조작은 그대로(머리만 누름 — 접기) */
+.trade .bt-table { position: absolute; top: 6px; left: 6px; z-index: 4; background: rgba(27, 31, 43, .92); border: 2px solid #000; padding: 4px 6px; font-family: 'Galmuri11', monospace; font-size: 10px; line-height: 1.5; color: #fff; pointer-events: none; }
+.trade .bt-head { color: var(--t-amber); pointer-events: auto; cursor: pointer; }
+.trade .bt-table.fold .bt-row { display: none; }
+.trade .bt-row { display: flex; justify-content: space-between; gap: 10px; }
+.trade .trade-help, .trade .trade-source { margin: 0; font-size: 10px; line-height: 15px; color: var(--t-dim); }
+.trade .trade-source-link { color: var(--t-dim); text-decoration: underline; }
+.trade .trade-verdict:empty, .trade .trade-orders:empty, .trade .trade-sheet:empty, .trade .trade-mine:empty { display: none; }
+.trade .tv-box { position: relative; background: var(--t-bg); border: 2px solid var(--t-line); box-shadow: 3px 3px 0 #000; padding: 10px 12px 10px 38px; font-size: 12px; color: var(--t-ink); }
+.trade .tv-num { position: absolute; left: 10px; top: 10px; width: 18px; height: 18px; line-height: 18px; text-align: center; background: var(--t-amber); color: #1a1408; font-size: 10px; border: 2px solid #000; }
+/* ① 판정 상자(p2 spec 4판 §6 — p40 T12, screens/trade-verdict.js): 이름 · 한 줄(N-02/N-04/N-05/N-11) · 근거 보기 ▾ · N-06/N-08(호박색) · N-07/N-10(흐림) */
+.trade .tv-label { display: block; min-height: 22px; line-height: 22px; font-family: 'Galmuri11', monospace; font-size: 12px; font-weight: 700; color: var(--t-amber); }
+.trade .tv-line { margin: 2px 0 0; font-size: 13px; line-height: 1.5; color: var(--t-ink); overflow-wrap: anywhere; }
+.trade .tv-more { margin-top: 8px; min-height: 34px; font-family: 'Galmuri11', monospace; font-size: 12px; color: #c9c9dc; background: transparent; border: 2px solid #4a4a62; box-shadow: 2px 2px 0 #000; border-radius: 0; padding: 4px 10px; cursor: pointer; }
+.trade .tv-more:disabled { opacity: .55; cursor: default; }
+.trade .tv-more:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: none; }
+.trade .tv-note { margin: 6px 0 0; font-size: 11px; line-height: 1.5; color: var(--t-amber); }
+.trade .tv-warn { margin: 6px 0 0; font-size: 11px; line-height: 1.5; color: var(--t-bad); }
+.trade .tv-box .trade-note { margin: 6px 0 0; font-size: 10px; line-height: 15px; color: var(--t-dim); }
+/* 시트(screens/trade-sheet.js — 근거 보기·주문 칸 T13): 주문 칸 밖 자리(.trade-sheet)의 고정 덮개. #main(고정 — 쌓임 맥락) 안이라 맨 위 줄·띠 아래부터
+   덮고(그 줄들은 z 20·39로 위에 남음), 상자는 아래에 붙고 넘치면 상자 안에서 내린다 */
+.trade .tv-sheet { position: fixed; left: 0; right: 0; bottom: 0; top: calc(var(--safe-t) + var(--bar-h) + var(--strip-h) + var(--band-h)); z-index: 50; display: flex; align-items: flex-end; justify-content: center; padding: 12px 12px calc(12px + var(--safe-b)); background: rgba(0, 0, 0, .62); }
+.trade .tv-sheet .tvm-box { width: 100%; max-width: 440px; max-height: 100%; overflow-y: auto; background: var(--t-bg); border: 2px solid var(--t-amber); box-shadow: 6px 6px 0 #000; padding: 16px 14px; }
+.trade .tv-sheet.red .tvm-box { border-color: var(--t-bad); }
+.trade .tvm-title { margin-bottom: 10px; font-family: 'Galmuri11', monospace; font-size: 15px; font-weight: 700; color: var(--t-ink); overflow-wrap: anywhere; }
+.trade .tvm-row { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; padding: 5px 0; border-top: 1px solid #241a0c; font-size: 12px; line-height: 1.5; color: var(--t-dim); }
+.trade .tvm-row b { font-weight: 400; color: var(--t-ink); overflow-wrap: anywhere; white-space: pre-wrap; }
+.trade .tvm-btns { margin-top: 14px; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; }
+.trade .tvm-btns button { min-height: 44px; font-family: 'Galmuri11', monospace; font-size: 13px; font-weight: 700; color: var(--t-bg); background: var(--t-amber); border: 2px solid #000; box-shadow: 2px 2px 0 #000; border-radius: 0; cursor: pointer; }
+.trade .tvm-btns button.ghost { color: #c9c9dc; background: transparent; border-color: #4a4a62; font-weight: 400; }
+.trade .tvm-btns button.red { color: var(--t-bg); background: var(--t-bad); }
+.trade .tvm-btns button:disabled { opacity: .45; cursor: default; }
+.trade .tvm-note { margin-top: 10px; font-size: 10px; line-height: 15px; color: var(--t-dim); }
+/* ⚡ 오토 모드 켜기·끄기 줄(따라가기 — CEO 2026-10-10, screens/trade-follow.js) — 차트 위 ⚡ 오토 모드 카드(.trade-auto) 안 맨 앞(카드가 상자).
+   빈칸(공용판·자격 없음)은 숨김(카드 제목 h2가 보임). 한 줄에 안 들어가면 줄바꿈(360px 가로 넘침 없음), 버튼은 보조(ghost) — 켜짐이면 초록 테두리 */
+.trade .trade-follow { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.trade .trade-follow:empty { display: none; }
+.trade .tf-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; min-width: 0; }
+.trade .tf-title { font: 400 14px/1.4 var(--pixel); color: var(--t-amber); }
+.trade .tf-status { flex: 1 1 140px; min-width: 0; font-family: 'Galmuri11', monospace; font-size: 11px; line-height: 1.4; color: var(--t-dim); overflow-wrap: anywhere; }
+.trade .tf-status.good { color: var(--t-good); }
+.trade .tf-status.warn { color: var(--t-amber); }
+.trade .tf-status.bad { color: var(--t-bad); }
+.trade .tf-status.dim { color: var(--t-dim); }
+.trade .tf-toggle, .trade .tf-settings { min-height: 34px; font-family: 'Galmuri11', monospace; font-size: 12px; color: #c9c9dc; background: transparent; border: 2px solid #4a4a62; box-shadow: 2px 2px 0 #000; border-radius: 0; padding: 4px 10px; white-space: nowrap; cursor: pointer; }
+.trade .tf-toggle[aria-pressed="true"] { border-color: var(--t-good); color: var(--t-good); }
+.trade .tf-toggle:disabled { opacity: .55; cursor: default; }
+.trade .tf-toggle:active:not(:disabled), .trade .tf-settings:active { transform: translate(2px, 2px); box-shadow: none; }
+.trade .tf-note { margin: 0; font-size: 10px; line-height: 15px; color: var(--t-dim); }
+/* 주문 칸(p2 spec 4판 §2.1 ⑧~⑪·§2.3 — p40 T13, modes/trade-orders.js): N 카드 값(N css:2405-2570)을 휴대폰 한 줄 흐름으로 — 2열 표는 420px부터,
+   포지션 동작 버튼 4칸은 2×2. 시트는 위 .tv-sheet(주문 칸 밖 자리의 고정 덮개). 360px에서 가로 넘침 없음(긴 글은 줄바꿈) */
+.trade .trade-orders { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.trade .tv2-box { min-width: 0; }
+.trade .tv2-title { margin: 2px 0 6px; font-family: 'Galmuri11', monospace; font-size: 14px; line-height: 20px; font-weight: 700; color: var(--t-ink); overflow-wrap: anywhere; }
+.trade .tv2-line { margin: 2px 0 0; font-size: 13px; line-height: 1.5; color: var(--t-ink); overflow-wrap: anywhere; }
+.trade .tv2-grid { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 8px; }
+@media (min-width: 420px) { .trade .tv2-grid { grid-template-columns: minmax(0, 1fr) 140px; column-gap: 12px; } }
+.trade .tv2-kv { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 6px; font-size: 12px; line-height: 18px; color: var(--t-ink); }
+.trade .tv2-kv .lbl { color: var(--t-dim); }
+.trade .tv2-kv .v { overflow-wrap: anywhere; }
+.trade .tv2-right .lbl { font-size: 11px; color: var(--t-dim); }
+.trade .tv2-right .val { font-size: 22px; line-height: 28px; font-weight: 700; color: var(--t-amber); overflow-wrap: anywhere; }
+.trade .tv2-right .tpv { font-size: 14px; line-height: 20px; font-weight: 700; color: var(--t-good); overflow-wrap: anywhere; }
+.trade .tv2-pnl { margin-top: 12px; padding: 10px 12px; background: #0e0b06; border: 1px solid var(--t-good); display: grid; gap: 4px; min-width: 0; }
+.trade .tv2-pnl.down { border-color: var(--t-bad); }
+.trade .tv2-pnl .lbl, .trade .tv2-pnl .meta { font-size: 10px; line-height: 14px; color: var(--t-dim); }
+.trade .tv2-pnl .big { font-size: 24px; line-height: 28px; font-weight: 700; }
+.trade .tv2-pnl .big.up { color: var(--t-good); }
+.trade .tv2-pnl .big.down { color: var(--t-bad); }
+.trade .tv2-cells { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 4px; }
+.trade .tv2-cell { display: flex; flex-direction: column; min-width: 0; }
+.trade .tv2-cell b { font-size: 12px; font-weight: 400; color: var(--t-ink); overflow-wrap: anywhere; }
+.trade .tv2-asl-word { margin-top: 8px; font-family: 'Galmuri11', monospace; font-size: 11px; color: var(--t-dim); }
+.trade .tv2-ox { display: inline-block; margin-bottom: 8px; font-size: 10px; padding: 4px 8px; border: 1px solid var(--t-line); background: #0a0a10; color: var(--t-dim); }
+.trade .tv2-warn { margin: 8px 0 0; padding: 6px 8px; font-size: 11px; line-height: 15px; color: var(--t-bad); border: 1px solid var(--t-bad); background: #1a0c0b; overflow-wrap: anywhere; }
+.trade .tv2-hint { margin: 8px 0 0; font-size: 10px; line-height: 15px; color: var(--t-dim); overflow-wrap: anywhere; }
+.trade .tv2-toast { font-size: 11px; color: var(--t-amber); }
+.trade .trade-orders > .trade-note { margin: 0; font-size: 10px; line-height: 15px; color: var(--t-dim); overflow-wrap: anywhere; }
+.trade .trade-link { color: var(--t-amber); text-decoration: underline; }
+/* 버튼 — 진입(롱·숏 2칸 / 진입 전 카드는 주 버튼 + 취소), 포지션 동작 2×2, 한 개짜리(인증·연결·확인했습니다·다시 걸기) */
+.trade .tv2-go { margin-top: 12px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.trade .tv2-go.draft { grid-template-columns: minmax(0, 1fr) 96px; }
+.trade .tv2-go.one { grid-template-columns: minmax(0, 1fr); }
+.trade .tv2-acts { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--t-line); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.trade .tv2-box button { min-height: 44px; font-family: 'Galmuri11', monospace; font-size: 13px; font-weight: 700; color: var(--t-bg); background: var(--t-amber); border: 2px solid #000; box-shadow: 2px 2px 0 #000; border-radius: 0; padding: 4px 8px; cursor: pointer; overflow-wrap: anywhere; }
+.trade .tv2-box button.long { background: var(--t-good); }
+.trade .tv2-box button.short { background: var(--t-bad); }
+.trade .tv2-acts button { min-height: 40px; font-size: 12px; color: var(--t-ink); background: transparent; border-color: #4a4a62; }
+.trade .tv2-acts button.asl.on { border-color: var(--t-good); color: var(--t-good); }
+.trade .tv2-box button.red { color: var(--t-bg); background: var(--t-bad); border-color: #000; }
+.trade .tv2-box button.ghost { color: #c9c9dc; background: transparent; border-color: #4a4a62; font-weight: 400; }
+.trade .tv2-one { width: 100%; margin-top: 8px; }
+.trade .tv2-box button:disabled { opacity: .45; cursor: default; }
+.trade .tv2-box button:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: none; }
+/* 3 진입 내역 표(M-22) — 360px에서 넘치지 않게 좁은 칸 */
+.trade .tv2-tbl { margin-top: 6px; border: 1px solid var(--t-line); font-size: 11px; }
+.trade .tv2-tbl .th, .trade .tv2-tbl .tr { display: grid; grid-template-columns: 30px 34px minmax(0, 1fr) minmax(0, 1fr) 38px; gap: 4px; padding: 5px 6px; color: var(--t-dim); }
+.trade .tv2-tbl .tr { border-top: 1px solid #241a0c; }
+.trade .tv2-tbl .tr.done { color: var(--t-ink); }
+.trade .tv2-tbl .tr.done .st { color: var(--t-good); }
+.trade .tv2-tbl .r { text-align: right; overflow-wrap: anywhere; }
+.trade .tv-logrow { font-size: 11px; line-height: 1.6; color: var(--t-ink); overflow-wrap: anywhere; }
+/* 시트 안 입력·칩·동의(입력 글자 16px — 휴대폰 확대 없음) */
+.trade .tvm-in { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; align-items: center; margin: 10px 0 4px; font-size: 12px; color: var(--t-dim); }
+.trade .tvm-input { height: 38px; min-width: 0; background: #0b0b14; border: 1px solid var(--t-amber); border-radius: 0; color: #fff; font-size: 16px; padding: 0 10px; }
+.trade .tvm-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.trade .tvm-chips button { min-height: 32px; padding: 0 10px; font-family: 'Galmuri11', monospace; font-size: 12px; color: #c9c9dc; background: transparent; border: 1px solid #4a4a62; border-radius: 0; cursor: pointer; }
+.trade .tvm-msg { margin: 8px 0 0; font-size: 11px; line-height: 16px; color: var(--t-ink); overflow-wrap: anywhere; }
+.trade .tvm-check { display: flex; gap: 8px; align-items: flex-start; margin: 8px 0; font-size: 12px; line-height: 18px; color: var(--t-ink); }
+.trade .tvm-check input { flex: none; width: 20px; height: 20px; margin: 0; accent-color: var(--t-amber); }
