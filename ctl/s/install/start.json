@@ -1,0 +1,83 @@
+{
+  "title": "회원 시작 순서",
+  "lead": "설치부터 오토 모드까지 화면대로 따라 하세요. 빨간 번호 순서대로 누릅니다.",
+  "pdfLink": "시작 안내서 PDF 보기",
+  "sections": [
+    {
+      "id": "start-home",
+      "title": "① 앱 열고 홈 화면에 추가",
+      "steps": [
+        { "text": "아이폰 Safari: (1) 공유 → (2) 홈 화면에 추가 → 추가.", "img": ["install/start/home-ios.webp"] },
+        { "text": "안드로이드 Chrome: (1) ⋮ → (2) 홈 화면에 추가.", "img": ["install/start/home-android.webp"] }
+      ],
+      "notes": ["이후 설정은 홈 화면 아이콘으로 연 앱에서 합니다.", "iOS 26은 주소창 오른쪽 ··· 를 먼저 누르면 공유가 보입니다."]
+    },
+    {
+      "id": "start-join",
+      "title": "② 오렌지엑스 가입·UID 활성화",
+      "steps": [
+        { "text": "트레이딩 탭에서 (1) 오렌지엑스 가입하기로 가입한 뒤 (2) UID 활성화하기.", "img": ["install/start/join-1.webp"] },
+        { "text": "(1) 가입한 UID를 넣고 (2) 활성화하기.", "img": ["install/start/join-2.webp"] }
+      ],
+      "notes": ["UID는 오렌지엑스 앱 › 프로필에서 확인합니다. UID 하나로 기기 3대까지 활성화됩니다."]
+    },
+    {
+      "id": "start-api",
+      "title": "③ API 키 만들고 연결",
+      "steps": [
+        { "text": "오렌지엑스 선물 설정 Preferences → Trading → Position Mode를 One-Way Mode로.", "img": ["install/start/ox-position-mode.webp"] },
+        { "text": "API 관리에서 Add a New Key — 구글 OTP를 먼저 켭니다.", "img": ["install/start/ox-otp.webp"] },
+        { "text": "Trade는 Read and Write(필수), 나머지는 Read(권장), IP Whitelist는 'No IP restriction.'.", "img": ["install/start/ox-permissions.webp"] },
+        { "text": "앱 위쪽 (1) 계정 연결을 누릅니다.", "img": ["install/start/api-app-1.webp"] },
+        { "text": "(1) API 키 (2) 비밀 키를 붙여 넣고 (3) 연결하기.", "img": ["install/start/api-app-2.webp"] },
+        { "text": "(1) '연결됐습니다'가 보이면 끝입니다.", "img": ["install/start/api-app-3.webp"] }
+      ],
+      "notes": [
+        "출금 권한(Wallet Read and Write)이 있는 키는 받지 않습니다."
+      ]
+    },
+    {
+      "id": "start-auto",
+      "title": "④ 오토 모드 시작",
+      "steps": [
+        { "text": "트레이딩 탭 오토 모드 카드에서 (1) 오토 모드 켜기.", "img": ["install/start/auto-1.webp"] },
+        { "text": "(1) 종목 (2) 횟수 (3) 종료 시각을 고르고 (4) 오토 모드 시작.", "img": ["install/start/auto-2.webp"] },
+        { "text": "(1) '다음 신호 대기 중'이면 켜진 것입니다. 앱을 닫아도 서버에서 계속 돕니다.", "img": ["install/start/auto-3.webp"] }
+      ],
+      "notes": ["배율 50× · 1차 13% · 익절 +10%는 고정입니다. 2·3·4차 추가 진입과 손절은 서버가 합니다."]
+    },
+    {
+      "id": "start-push",
+      "title": "⑤ 주문 알림 받기",
+      "steps": [
+        { "text": "오토 모드 화면에서 (1) 주문 알림 받기 → 알림 허용.", "img": ["install/start/push-1.webp"] },
+        { "text": "(1) '주문 알림 끄기'로 바뀌면 켜진 것입니다. 앱 설정에도 같은 줄이 있습니다.", "img": ["install/start/push-2.webp"] }
+      ],
+      "notes": [
+        "아이폰은 iOS 16.4 이상, 홈 화면 아이콘으로 연 앱에서만 됩니다. 안드로이드는 Chrome으로 추가한 앱에서 켭니다.",
+        "알림이 늦으면 휴대폰 설정에서 이 앱(안드로이드는 Chrome)을 배터리 절약 예외로 두세요."
+      ]
+    },
+    {
+      "id": "start-manual",
+      "title": "⑥ 정밀 분석 보고 직접 진입",
+      "steps": [
+        { "text": "사무실 탭에서 종목을 고르고 (1) 정밀 분석.", "img": ["install/start/manual-1.webp"] },
+        { "text": "판정이 나오면 (1) 진입가·익절가 보기.", "img": ["install/start/manual-2.webp"] },
+        { "text": "트레이딩 탭 진입 참고가 카드에서 (1) 진입하기.", "img": ["install/start/manual-3.webp"] },
+        { "text": "확인 창에서 (1) 진입을 눌러야 주문이 나갑니다.", "img": ["install/start/manual-4.webp"] }
+      ],
+      "notes": ["오토 모드가 켜져 있거나 분석이 30분을 넘으면 버튼 대신 안내 한 줄이 보입니다."]
+    },
+    {
+      "id": "start-stop",
+      "title": "⑦ 멈추기·정리·문의",
+      "steps": [
+        { "text": "(1) 오토 모드 멈추기 — 새 진입만 멈추고, 열린 포지션은 끝까지 지킵니다.", "img": ["install/start/stop-1.webp"] },
+        { "text": "바로 끝내려면 트레이딩 탭 (1) 포지션 정리.", "img": ["install/start/stop-2.webp"] },
+        { "text": "문의는 설정의 (1) 문의하기(카카오톡 채널).", "img": ["install/start/stop-3.webp"] }
+      ],
+      "notes": ["카카오톡 채널: https://pf.kakao.com/_ICyin/chat?bot=true"]
+    }
+  ]
+}
